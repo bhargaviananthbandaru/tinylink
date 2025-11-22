@@ -40,8 +40,11 @@ router.post('/shorten', async (req, res) => {
     // Save to database
     await dbOperations.createUrl(originalUrl, shortCode);
 
-    // Return shortened URL
-    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    // Return shortened URL - auto-detect domain if BASE_URL not set
+    const baseUrl = process.env.BASE_URL || 
+                    (req.get('host')?.includes('localhost') 
+                      ? 'http://localhost:5000' 
+                      : `https://${req.get('host')}`);
     const shortUrl = `${baseUrl}/${shortCode}`;
 
     res.status(201).json({
@@ -60,7 +63,11 @@ router.post('/shorten', async (req, res) => {
 router.get('/urls', async (req, res) => {
   try {
     const urls = await dbOperations.getAllUrls();
-    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    // Auto-detect domain if BASE_URL not set
+    const baseUrl = process.env.BASE_URL || 
+                    (req.get('host')?.includes('localhost') 
+                      ? 'http://localhost:5000' 
+                      : `https://${req.get('host')}`);
     
     const formattedUrls = urls.map(url => ({
       id: url.id,
@@ -89,7 +96,11 @@ router.get('/stats/:shortCode', async (req, res) => {
       return res.status(404).json({ error: 'Short URL not found' });
     }
 
-    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    // Auto-detect domain if BASE_URL not set
+    const baseUrl = process.env.BASE_URL || 
+                    (req.get('host')?.includes('localhost') 
+                      ? 'http://localhost:5000' 
+                      : `https://${req.get('host')}`);
     res.json({
       shortCode,
       originalUrl: stats.original_url,

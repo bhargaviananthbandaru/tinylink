@@ -100,6 +100,7 @@ const dbOperations = {
   async getStats(shortCode) {
     const query = 'SELECT * FROM urls WHERE short_code = $1';
     const result = await pool.query(query, [shortCode]);
+    return { changes: result.rowCount };
     
     if (result.rows.length === 0) {
       return null;
